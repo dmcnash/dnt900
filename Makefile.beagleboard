@@ -1,0 +1,75 @@
+# External Makefile for dnt900 line dicipline driver
+#Cross compile example - modify to taste
+
+#Architecture
+ARCH=arm
+
+#Points to the root of the TI SDK
+export TI_SDK_PATH=/home/dmcnash/ti-sdk-beagleboard-05.05.01.00
+
+#root of the target file system for installing applications
+DESTDIR=/home/dmcnash/ti-sdk-beagleboard-05.05.01.00/targetNFS
+
+#Points to the root of the Linux libraries and headers matching the
+#demo file system.
+export LINUX_DEVKIT_PATH=$(TI_SDK_PATH)/linux-devkit
+
+#Cross compiler prefix
+export CROSS_COMPILE=$(LINUX_DEVKIT_PATH)/bin/arm-arago-linux-gnueabi-
+
+#The directory that points to the SDK kernel source tree
+# Change this directory to point to the correct kernel source for the
+# kernel version that is on the target.
+KSRC=$(TI_SDK_PATH)/board-support/linux-3.3.7-r115
+
+#KBUILD_OUTPUT=$(TOPMOST_DIR)/kernel/build
+export ARCH CROSS_COMPILE KBUILD_OUTPUT
+
+export INSTALL_MOD_PATH=$ROOT_FS_DIR
+
+
+ifneq ($(KERNELRELEASE),)
+include Kbuild
+else
+
+PACKAGE := dnt900
+VERSION := 1.0
+export PACKAGE VERSION
+
+# Directories
+
+PREFIX := $(ROOT_FS_DIR)
+LIBDIR := $(PREFIX)/lib
+INCDIR := $(PREFIX)/include
+BINDIR := $(PREFIX)/bin
+export PREFIX LIBDIR INCDIR BINDIR
+
+all: modules
+
+# Makefile rules for modules.
+
+INCLUDEDIR = $(KSRC)/include
+
+CFLAGS = -D__KERNEL__ -DMODULE -DEXPORT_SYMTAB -O3 -Wall -I$(INCLUDEDIR) -I./include
+
+OBJS = $(PACKAGE).o
+
+modules:
+	$(MAKE) -C $(KSRC) M=$(PWD) modules
+
+modules_install:
+	$(MAKE) -C $(KSRC) M=$(PWD) INSTALL_MOD_PATH=$(DESTDIR) modules_install
+
+# Misc.
+
+clean:
+	rm -f *.o core *.ko
+
+dist-clean:
+	rm -f *.o core *.ko
+
+real-clean:
+	rm -f *.o core *.ko
+
+endif # KERNELRELEASE != ""
+
