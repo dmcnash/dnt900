@@ -18,9 +18,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// Modified by DMC <dmcnash@murata.com>
-// changed declarations to standard form for non-module compile with std 
-// kernel compile args
+// Modified by DMC <dmcnash@rfm.com>
+// changed declarations to standard form for non-module compile with std kernel compile args
+// added ioctl entry
 
 #include <linux/kernel.h>
 #include <linux/module.h>
