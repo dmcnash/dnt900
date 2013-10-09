@@ -1,0 +1,87 @@
+# External Makefile for n_dnt90 line dicipline driver
+#Cross compile example - modify to taste
+
+#Architecture
+ARCH=arm
+export KERNEL_VERSION=3.4.4
+export TARGET_BOARD=rfm
+export COMPILER_NAME=arm-none-linux-gnueabi
+export TOPMOST_DIR=/home/dmcnash/Projects/git/NG_REVF/networkgateway/
+export COMPILER_DIR=$(TOPMOST_DIR)/arm-2012.03
+export COMPILER_ROOT=$(COMPILER_DIR)/$(COMPILER_NAME)
+export COMPILER_INC=$(COMPILER_ROOT)/libc/usr/include
+export COMPILER_LIB=$(COMPILER_ROOT)/libc/lib
+export COMPILER_LIB_VER=2.15
+#Cross compiler prefix
+export CROSS_COMPILE=$(COMPILER_DIR)/bin/$(COMPILER_NAME)\-
+export CC=$(COMPILER_NAME)-gcc
+export CXX=$(COMPILER_NAME)-g++
+export AR=$(COMPILER_NAME)-ar
+export AS=$(COMPILER_NAME)-as
+export RANLIB=$(COMPILER_NAME)-ranlib
+export LD=$(COMPILER_NAME)-ld
+export STRIP=$(COMPILER_NAME)-strip
+
+#export PATH=$(TOPMOST_DIR)/bin:$(COMPILER_DIR)/bin:$(TOPMOST_DIR)/uboot/build/tools:$(TOPMOST_DIR)/tool:$(PATH)
+export PATH=$(COMPILER_DIR)/bin:/usr/local/sbin:/usr/sbin:/sbin:/bin:/usr/bin
+
+
+#The directory that points to the SDK kernel source tree
+# Change this directory to point to the correct kernel source for the
+# kernel version that is on the target.
+KSRC=$(TOPMOST_DIR)/kernel/build-$(KERNEL_VERSION)
+
+#KBUILD_OUTPUT=$(TOPMOST_DIR)/kernel/build
+export ARCH CROSS_COMPILE KBUILD_OUTPUT
+
+#export INSTALL_MOD_PATH=$ROOT_FS_DIR
+
+
+ifneq ($(KERNELRELEASE),)
+include Kbuild
+else
+
+PACKAGE := n_dnt90
+VERSION := 1.0
+export PACKAGE VERSION
+
+# Directories
+
+PREFIX := $(ROOT_FS_DIR)
+LIBDIR := $(PREFIX)/lib
+INCDIR := $(PREFIX)/include
+BINDIR := $(PREFIX)/bin
+export PREFIX LIBDIR INCDIR BINDIR
+
+all: modules
+
+# Makefile rules for modules.
+
+INCLUDEDIR = $(KSRC)/include
+
+CFLAGS = -D__KERNEL__ -DMODULE -DEXPORT_SYMTAB -O3 -Wall -I$(INCLUDEDIR) -I./include
+
+OBJS = $(PACKAGE).o
+
+modules:
+	$(MAKE) -C $(KSRC) M=$(PWD) modules
+
+modules_install:
+	$(MAKE) -C $(KSRC) M=$(PWD) INSTALL_MOD_PATH=$(DESTDIR) modules_install
+
+# Misc.
+
+ldload: ldload.c
+	$(CC) -o ldload ldload.c
+
+clean:
+	rm -f *.o core *.ko
+
+dist-clean:
+	rm -f *.o core *.ko
+
+real-clean:
+	rm -f *.o core *.ko
+
+endif # KERNELRELEASE != ""
+
